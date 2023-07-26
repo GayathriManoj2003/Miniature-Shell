@@ -1,10 +1,16 @@
 #include <iostream>
-#include<stdlib.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string>
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
 using namespace std;
 
 class Cat{
@@ -14,43 +20,93 @@ class Cat{
     void cat_command(string x)
     {
         inp=x;
-        ifstream MyReadFile (inp);
-        while (getline(MyReadFile, myText))
+        ifstream catFile (inp);
+        if(!catFile) { 
+            cerr << "Error: file could not be opened" << endl;
+            exit(1);
+        }
+        while (getline( catFile, myText))
         {
              cout << myText;
         }
-
-        MyReadFile.close();
+        catFile.close();
     };
 };
+
+
+
+class Tokens {
+    vector <string> tokens;
+    public:
+        Tokens(string);
+        string operator[](int index);
+        void hi()
+        {
+            cout << "hi " << endl;
+        }
+};
+
+class Fork {
+    public:
+        int execute(Tokens& obj) {
+            pid_t p;
+            int res;
+            p = fork();
+            if(p > 0)
+            {
+                res = wait(NULL);
+            }
+            else if(!p)
+            {
+                cout << "\nInside Child process.";
+                obj.hi();
+                // char * c = (obj[0]).c_str();
+                // char * c = (obj[0]).data();
+                // char * c = &(obj[0]);
+                // str.data();
+                char *args[2]={ "./script.sh" ,NULL};
+                execvp(args[0],args);
+                exit(0);
+            }
+            return res;
+        }
+};
+
+
+Tokens::Tokens(string cmd) {
+    stringstream stream(cmd);
+    string intermediate;
+
+    while( getline(stream, intermediate, ' ') )
+    {
+        tokens.push_back(intermediate);
+    }
+}
+string Tokens::operator[]( int index) {
+    return tokens[index];
+} 
 int main()
 {
-    while(true)
-    {
-        vector <string> tokens;
+    string prompt(" $ ");
+    string cwd;
+    while(true) {
+        char current_dir[4096];
         string str;
-
-        cout << "$ ";
+        getcwd(current_dir, sizeof(current_dir));
+        cout << current_dir;
+        cout << prompt;
         getline(cin, str);
 
-        stringstream check1(str);
-        string intermediate;
-
-        while(getline(check1, intermediate, ' '))
+        Tokens tokens(str);
+        if (tokens[0]=="cat")
         {
-            tokens.push_back(intermediate);
+            Cat().cat_command(tokens[1]);
         }
-
-        // Printing the token vector
-        // for(int i = 0; i < tokens.size(); i++)
-        //     cout << tokens[i] << '\n';
-
-        if (tokens[0]=="cat") //cat command
+        else if (tokens[0].rfind( "./", 0) == 0) //execute program
         {
-            Cat c1;
-            c1.cat_command(tokens[1]);
+            Fork().execute(tokens);
         }
-        if (tokens[0]=="exit") //exit command
+        else if (tokens[0]=="exit") //exit command
         {
             exit(0);
         }
