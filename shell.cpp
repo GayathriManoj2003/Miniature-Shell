@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <fstream>
 using namespace std;
 
 class Cat{
@@ -41,8 +42,8 @@ int main()
         }
 
         // Printing the token vector
-        for(int i = 0; i < tokens.size(); i++)
-            cout << tokens[i] << '\n';
+        // for(int i = 0; i < tokens.size(); i++)
+        //     cout << tokens[i] << '\n';
 
         if (tokens[0]=="cat") //cat command
         {
