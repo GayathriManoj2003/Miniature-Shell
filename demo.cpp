@@ -8,12 +8,12 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <system>
 using namespace std;
 
 class Cat{
     string myText;
     string inp;
+
     public:
     void cat_command(string x)
     {inp=x;
