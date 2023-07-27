@@ -20,6 +20,7 @@ class Tokens {
         Tokens(string);
         string operator[](int index);
         int num_args();
+        int isSpace(string);
         // void hi()
         // {
         //     cout << "hi " << endl;
@@ -28,6 +29,12 @@ class Tokens {
 
 int Tokens::num_args() {
     return tokens.size() - 1;
+}
+int Tokens::isSpace( string str) {
+    int i = 0;
+    while( str[i++] != '\0')
+        if( !isspace(str[i]) ) return 0;
+    return 1;
 }
 
 class Cat{
@@ -123,12 +130,15 @@ class Fork {
 
 
 Tokens::Tokens(string cmd) {
-
     string tok;
-    stringstream cmd_stream(cmd);
-
-    while( cmd_stream >> tok ) {
-        tokens.push_back(tok);
+    if(isSpace(cmd)) {
+        tokens.push_back("\0");
+    }
+    else {
+        stringstream cmd_stream(cmd);
+        while( cmd_stream >> tok ) {
+            tokens.push_back(tok);
+        }
     }
 }
 string Tokens::operator[]( int index) {
@@ -152,13 +162,17 @@ class SimpleShell {
                 string cmd;
                 printPrompt();
                 getline(cin, cmd);
+                cmd.append("\0");
                 flag = executeCommand(cmd);
             }
         }
         int executeCommand(string cmd) {
 
-            
             Tokens tokens(cmd);
+            cout << tokens.num_args();
+            if (tokens[0]=="\0") {
+                return 1;
+            }
             if (tokens[0]=="cat")
             {
                 Cat().cat_command(tokens[1]);
