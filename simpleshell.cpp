@@ -46,17 +46,21 @@ int SimpleShell::processCmd(string cmd_chain) {
         string cmd;
         while ((ind = cmd_chain.find('|', next)) != std::string::npos) {
             cmd = cmd_chain.substr(next, ind - next);
-            res = executeCommand( cmd, output);
-            if( res == -1 )
+            res = executeCommand(cmd, output);
+            if( res == -1 ) {
+                cout << output << endl;
                 return -1;
+            }
             input = output;
             next = ind + 1;
         }
         if( next < (cmd_chain.size() -1) ) {
             cmd = cmd_chain.substr(next, cmd_chain.size() - 1);
-            res = executeCommand( cmd, output);
-            if( res == -1 || res == 1)
+            res = executeCommand(cmd, output);
+            if( res == -1 || res == 1) {
+                cout << output << endl;
                 return -1;
+            }
         }
         if(output!="")
             cout << output << endl;
@@ -203,8 +207,27 @@ int SimpleShell::executeCommand(string cmd, string& out, int first) {
     }
     else {
         // sys call here
-        cout << "Command " + tokens[0] + " not found." << endl;
-        return -1;
+        try {
+            if(!first) {
+                ofstream outFile("tempfile");
+                outFile << input;
+                outFile.close();
+                cmd = cmd + " tempfile";
+                system(cmd.c_str());
+                system("rm tempfile");
+            }
+            else {
+                system(cmd.c_str());
+            }
+        }
+        catch ( const  exception& e) {
+            cout << "error: " << e.what();
+            cout << endl;
+            return -1;
+        }
+        return 0;
+        // cout << "Command " + tokens[0] + " not found." << endl;
+        // return -1;
     }
     return 0;
 }
