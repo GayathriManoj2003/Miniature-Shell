@@ -16,6 +16,7 @@ class Cat{
     public:
         int cat_command(string x);
         int cat_command(string x,string y);
+        int execute(Tokens &);
         string getOutput();
 };
 

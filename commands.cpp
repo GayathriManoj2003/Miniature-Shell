@@ -1,21 +1,20 @@
 #include "commands.hpp"
-#include <fcntl.h>
 #include <sys/stat.h>
-#include <string>
 
 int Cat::cat_command(string x)
 {
     input = x;
     char *str = new char[x.size() + 1];
     ifstream catFile(input);
+    stringstream stream;
     if(!catFile) {
-        cout << "cat: " + input + ": No such file or directory" << endl;
+        stream << "cat: " + input + ": No such file or directory" << endl;
+        output = output + stream.str();
+        catFile.close();
         return -1;
     }
-    stringstream stream;
     stream << catFile.rdbuf();
-    output = stream.str();
-    // cout << output;
+    output = output + stream.str();
     catFile.close();
     return 0;
 }
@@ -61,11 +60,23 @@ int Cat::cat_command(string x,string y)
             cout << myText << endl;
         }
         catFile2.close();
-        // cout << endl;
 
         catFile1.close();
     }
     return 0;
+}
+int Cat::execute(Tokens &obj)
+{   
+    if(obj.num_args() < 1) return -1;
+    string file;
+    int ind = 1;
+    int n = obj.num_args();
+    int res = 0;
+    for(; ind <= n ; ind++) {
+        file = obj[ind];
+        res = cat_command(file);
+    }
+    return res;
 }
 string Cat::getOutput() {
     return output;

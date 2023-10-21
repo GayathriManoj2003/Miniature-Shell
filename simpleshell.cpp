@@ -85,6 +85,10 @@ int SimpleShell::executeCommand(string cmd, string& out, int first) {
             res = c1.cat_command(tokens[1], tokens[2]);
             out = c1.getOutput();
         }
+        else {
+            res = c1.execute(tokens);
+            out = c1.getOutput();
+        }
         if(out[out.size() - 1] == '\n')
             out[out.size() - 1] = '\0';
         if( res == -1 )
