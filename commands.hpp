@@ -8,7 +8,6 @@
 
 #include "tokens.hpp"
 
-
 class Cat{
     string myText;
     string input;
@@ -80,6 +79,15 @@ class PrintDir{
         string& getOutput() {
             return output;
         }
+};
+
+class Move {
+    public:
+        int execute(Tokens& obj);
+        int renameFile(const string& source, const string& destination) {
+            return rename(source.c_str(), destination.c_str());
+        }
+        string getFileName(const string& path);
 };
 
 class Fork {

@@ -177,6 +177,26 @@ int SimpleShell::executeCommand(string cmd, string& out, int first) {
             out = mdir.getOutput();
         }
     }
+    else if (tokens[0] == "mv") // mv command
+    {
+        Move mv;
+        int res;
+        if(tokens.num_args() < 2) {
+            res = -1;
+            cout << "error: Insufficient Arguments" << endl;
+        }
+        else {
+            try {
+                mv.execute(tokens);
+            }
+            catch ( const  exception& e) {
+                cout << "error: " << e.what();
+                cout << endl;
+                return -1;
+            }
+            if( res == -1 ) return 1;
+        }
+    }
     else if (tokens[0]=="exit") // exit command
     {
         exit(0);

@@ -379,3 +379,47 @@ void Clear::execute( Tokens& obj)
     // ANSI Escape Sequences used
     cout << "\033[2J\033[1;1H";
 };
+
+string Move::getFileName(const string& path) {
+    size_t pos = path.find_last_of("/\\");
+    if (pos != string::npos) {
+        return path.substr(pos + 1);
+    }
+    return path;
+}
+int Move::execute(Tokens& obj) {
+        if (obj.num_args() != 2) {
+            cout << "mv: missing source and/or destination arguments" << endl;
+            return -1;
+        }
+
+        string source = obj[1];
+        string destination = obj[2];
+
+        struct stat sourceStat, destStat;
+        if (stat(source.c_str(), &sourceStat) != 0) {
+            cout << "mv: cannot access '" << source << "': No such file or directory" << endl;
+            return -1;
+        }
+
+        if (stat(destination.c_str(), &destStat) == 0 && S_ISDIR(destStat.st_mode)) {
+            // Destination is a directory, move the source into the directory
+            string newDestination = destination + "/" + getFileName(source);
+            if (renameFile(source, newDestination) == 0) {
+                cout << "Moved '" << source << "' to '" << newDestination << "'" << endl;
+                return 0;
+            } else {
+                cout << "mv: error moving file" << endl;
+                return -1;
+            }
+        } else {
+            // Destination is a file or a non-existent path, rename the source
+            if (renameFile(source, destination) == 0) {
+                cout << "Renamed '" << source << "' to '" << destination << "'" << endl;
+                return 0;
+            } else {
+                cout << "mv: error renaming file" << endl;
+                return -1;
+            }
+        }
+    }
