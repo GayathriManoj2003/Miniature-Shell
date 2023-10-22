@@ -9,8 +9,7 @@ int Cat::cat_command(string x)
     ifstream catFile(input);
     stringstream stream;
     if(!catFile) {
-        stream << "cat: " + input + ": No such file or directory" << endl;
-        output = output + stream.str();
+        cout << "cat: " + input + ": No such file or directory" << endl;
         catFile.close();
         return -1;
     }
