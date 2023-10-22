@@ -531,7 +531,7 @@ int Touch::execute( Tokens& obj) {
                 }
                 catch( const exception & e) {
                     cout << e.what() ;
-                    return -1;
+                    res = -1;
                 }
             }
         }
