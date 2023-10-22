@@ -57,8 +57,9 @@ class WordCount{
 class Touch{
     string output;
     public:
-        int execute( Tokens& obj) {
-            return 0;
+        int execute( Tokens& obj);
+        string& getOutput() {
+            return output;
         }
 };
 

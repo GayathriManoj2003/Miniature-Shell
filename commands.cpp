@@ -1,5 +1,6 @@
 #include "commands.hpp"
 #include <sys/stat.h>
+#include <utime.h>
 
 int Cat::cat_command(string x)
 {
@@ -21,8 +22,6 @@ int Cat::cat_command(string x)
 int Cat::cat_command(string x,string y)
 {   
     input=y;
-    char current_dir[4096];
-    getcwd(current_dir, sizeof(current_dir));
     if (x=="-n") {
         ifstream catfile (input);
         if(!catfile) {
@@ -160,7 +159,15 @@ int ListDir::execute( Tokens& obj)
     struct dirent *file_p;
     int l = 0, a = 0;
     int ind = -1;
+    // if (stat(path, &st) == 0) {
+    //     // Stat was successful, you can now access the file metadata
+    //     printf("File size: %ld bytes\n", (long)st.st_size);
+    //     printf("Modification time: %ld\n", (long)st.st_mtim.tv_sec);
+    //     printf("Access time: %ld\n", (long)st.st_atim.tv_sec);
+    //     printf("Permissions: %o\n", st.st_mode & 0777);
+    //     // ... and so on
 
+    // }
     for(int i = 0; i < obj.num_args(); i++) {
         if(obj[i+1] == "-a")
             a = 1;
@@ -423,3 +430,53 @@ int Move::execute(Tokens& obj) {
             }
         }
     }
+
+
+int Touch::execute( Tokens& obj) {
+
+    vector<string>input_tok=obj.tokens;
+    string dir;
+
+    int count=1;
+    int flag=0;
+    int args = obj.num_args();
+    int max = args;
+    
+    size_t slash_f=input_tok[args-1].find("/");
+    size_t per_f=input_tok[args-1].find(".");
+    
+    if (slash_f!=std::string::npos && per_f==std::string_view::npos){   
+        dir=input_tok[args-1];
+        flag=1;  
+    }
+
+    count=1;
+    
+    while (count<=max)
+    {
+        string file=obj.tokens[count];
+        if (flag==1)
+            file=dir+"/"+file;
+
+        struct stat st;
+        string path(file);
+        
+        if (stat(path.c_str(), &st) == 0) {
+            struct timespec ts;    
+            clock_gettime(CLOCK_REALTIME, &ts);
+            struct utimbuf new_times;
+            new_times.actime = ts.tv_sec;
+            new_times.modtime = ts.tv_sec;
+            if (utime(path.c_str(), &new_times) != 0) {
+                return -1;
+            }
+        }
+        else {
+            ofstream Mfile(path);
+            Mfile.close();
+        }
+        count++;
+    }
+        
+    return 0;
+}

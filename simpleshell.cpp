@@ -201,6 +201,11 @@ int SimpleShell::executeCommand(string cmd, string& out, int first) {
             if( res == -1 ) return 1;
         }
     }
+    else if (tokens[0]=="touch") // touch command
+    {
+        class Touch A;
+        A.execute(tokens);
+    }
     else if (tokens[0]=="exit") // exit command
     {
         exit(0);
@@ -210,7 +215,6 @@ int SimpleShell::executeCommand(string cmd, string& out, int first) {
         try {
             if(!first) {
                 ofstream outFile("tempfile");
-                outFile << input;
                 outFile.close();
                 cmd = cmd + " tempfile";
                 system(cmd.c_str());
