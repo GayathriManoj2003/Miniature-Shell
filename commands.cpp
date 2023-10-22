@@ -327,24 +327,21 @@ int MakeDirectory::execute(Tokens& obj) {
 
 int MakeDirectory::createDir(string str) {
     DIR *dirp;
-    int ind = 1;
-
-    string p_str;
-    p_str = str;
+    string p_str(str);
     string path = "";
-    string rev_p_str = string(p_str.rbegin(), p_str.rend());
-    bool flag = false;
-    int index = -1;
-    int i = p_str.size() - 1;
     string dir_name = "";
-    while( i >= 0 ) {
-        char c = rev_p_str[i];
+
+    int n = p_str.size();
+    bool flag = false;
+    int i = n -1;
+    while( i >= 0) {
+        char c = p_str[i];
         if(c == '/') {
             flag = true;
             break;
         }
         i--;
-        dir_name.push_back(c);
+        dir_name = c + dir_name;
     }
     if(flag && i>0) {
         int j = 0;
@@ -466,23 +463,12 @@ int Touch::execute( Tokens& obj) {
     int flag=0;
     int args = obj.num_args();
     int max = args;
-    
-    size_t slash_f=input_tok[args-1].find("/");
-    size_t per_f=input_tok[args-1].find(".");
-    
-    if (slash_f!=std::string::npos && per_f==std::string_view::npos){   
-        dir=input_tok[args-1];
-        flag=1;  
-    }
 
     count=1;
-    
+    int res = 0;
     while (count<=max)
     {
         string file=obj.tokens[count];
-        if (flag==1)
-            file=dir+"/"+file;
-
         struct stat st;
         string path(file);
         
@@ -497,11 +483,60 @@ int Touch::execute( Tokens& obj) {
             }
         }
         else {
-            ofstream Mfile(path);
-            Mfile.close();
+            string p_str(file);
+            string path = "";
+            string file_name = "";
+
+            bool flag = false;
+            int n = p_str.size();
+            int i = n -1;
+            while( i >= 0) {
+                char c = p_str[i];
+                if(c == '/') {
+                    flag = true;
+                    break;
+                }
+                i--;
+                file_name = c + file_name;
+            }
+            i++;
+            if(flag && i > 0) {
+                int j = 0;
+                while( j < i) {
+                    path.push_back(p_str[j]);
+                    j++;
+                }
+                if(path[0] != '/') {
+                    path = "/" + path;
+                    string cur = filesystem::current_path();
+                    path = cur + path;
+                }
+            }
+            else path = filesystem::current_path();
+
+            if(stat(path.c_str(), &st) != 0) {
+                cout << "touch: directory " + path + " does not exist" << endl;
+                res = -1;
+            }
+            else {
+                string path_dir = "";
+                if(flag)
+                    path_dir = path + file_name;
+                else
+                    path_dir = path + "/" + file_name;
+
+                try {
+                    ofstream Mfile(path_dir);
+                    Mfile.close();
+                }
+                catch( const exception & e) {
+                    cout << e.what() ;
+                    return -1;
+                }
+            }
         }
         count++;
     }
         
-    return 0;
+    return res;
 }

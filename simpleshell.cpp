@@ -204,7 +204,8 @@ int SimpleShell::executeCommand(string cmd, string& out, int first) {
     else if (tokens[0]=="touch") // touch command
     {
         class Touch A;
-        A.execute(tokens);
+        int res = A.execute(tokens);
+        return res;
     }
     else if (tokens[0]=="exit") // exit command
     {
