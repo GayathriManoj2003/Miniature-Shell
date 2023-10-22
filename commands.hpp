@@ -66,11 +66,12 @@ class Touch{
 class ListDir{
     string output;
     public:
-        int execute( Tokens& obj);
-        void mode_str(mode_t m, char *str);
+        int execute( Tokens&);
+        void mode_str(mode_t , string &);
         string& getOutput() {
             return output;
         }
+        string getTimeString(struct tm &);
 };
 
 class PrintDir{

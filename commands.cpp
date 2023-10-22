@@ -186,8 +186,13 @@ int ListDir::execute( Tokens& obj)
         return -1;
     }
     if(l) {
-        stream <<left<< setw(15) << "Permissions" << setw(12) <<
-        "Size" << "File Name" << endl;
+        stream <<left
+        << setw(10) << "Permissions" 
+        << right
+        << setw(8) << "Size "
+        << left
+        << setw(15) << " Access Time" 
+        << "File Name" << endl;
     }
     file_p = new struct dirent();
     do 
@@ -202,12 +207,19 @@ int ListDir::execute( Tokens& obj)
                 continue;
             string sl = "/";
             string file_path = path + sl + string(file_p->d_name);
-            char perm[10];
+            string perm;
             if(l) {
                 status = stat(file_path.c_str(), &stats);
+                struct tm file_time = *(localtime(&stats.st_atime));
                 mode_str(stats.st_mode, perm);
-                stream << left << setw(15) << perm << setw(12) 
-                << (long)stats.st_size << file_p->d_name << endl;
+                stream << left
+                << setw(10) << perm 
+                << right
+                << setw(8) << (long)stats.st_size 
+                << "  "
+                << left
+                << setw(15) << getTimeString(file_time) 
+                << file_p->d_name << endl;
             }
             else { 
                 stream << file_p->d_name << "\t";
@@ -221,17 +233,43 @@ int ListDir::execute( Tokens& obj)
     file_p = NULL;
     return 0;
 };
-void ListDir::mode_str(mode_t m, char *str) {
-    str[0]= (m & S_IRUSR)? 'r':'-';
-    str[1]= (m & S_IWUSR)? 'w':'-';
-    str[3]= (m & S_IRGRP)? 'r':'-';
-    str[2]= (m & S_IXUSR)? 'x':'-';
-    str[4]= (m & S_IWGRP)? 'w':'-';
-    str[5]= (m & S_IXGRP)? 'x':'-';
-    str[6]= (m & S_IROTH)? 'r':'-';
-    str[7]= (m & S_IWOTH)? 'w':'-';
-    str[8]= (m & S_IXOTH)? 'x':'-';
-    str[9]= '\0';
+string ListDir::getTimeString(struct tm &file_time){
+    string month;
+    stringstream timestrm;
+    switch(file_time.tm_mon) {
+        case 0: month = "Jan"; break;
+        case 1: month = "Feb"; break;
+        case 2: month = "Mar"; break;
+        case 3: month = "Apr"; break;
+        case 4: month = "May"; break;
+        case 5: month = "Jun"; break;
+        case 6: month = "Jul"; break;
+        case 7: month = "Aug"; break;
+        case 8: month = "Sep"; break;
+        case 9: month = "Oct"; break;
+        case 10: month = "Nov"; break;
+        case 11: month = "Dec"; break;
+    }
+
+    timestrm << month + " " 
+    << setw(2) << setfill('0') << file_time.tm_mday 
+    << " " 
+    << setw(2) << setfill('0') << file_time.tm_hour 
+    << ":" 
+    << setw(2) << setfill('0') << file_time.tm_min;
+    return timestrm.str();
+
+}
+void ListDir::mode_str(mode_t m, string &str) {
+    str.push_back((m & S_IRUSR)? 'r':'-');
+    str.push_back((m & S_IWUSR)? 'w':'-');
+    str.push_back((m & S_IRGRP)? 'r':'-');
+    str.push_back((m & S_IXUSR)? 'x':'-');
+    str.push_back((m & S_IWGRP)? 'w':'-');
+    str.push_back((m & S_IXGRP)? 'x':'-');
+    str.push_back((m & S_IROTH)? 'r':'-');
+    str.push_back((m & S_IWOTH)? 'w':'-');
+    str.push_back((m & S_IXOTH)? 'x':'-');
 }
 
 int PrintDir::execute( Tokens& obj) {
