@@ -159,15 +159,7 @@ int ListDir::execute( Tokens& obj)
     struct dirent *file_p;
     int l = 0, a = 0;
     int ind = -1;
-    // if (stat(path, &st) == 0) {
-    //     // Stat was successful, you can now access the file metadata
-    //     printf("File size: %ld bytes\n", (long)st.st_size);
-    //     printf("Modification time: %ld\n", (long)st.st_mtim.tv_sec);
-    //     printf("Access time: %ld\n", (long)st.st_atim.tv_sec);
-    //     printf("Permissions: %o\n", st.st_mode & 0777);
-    //     // ... and so on
-
-    // }
+    
     for(int i = 0; i < obj.num_args(); i++) {
         if(obj[i+1] == "-a")
             a = 1;
@@ -184,20 +176,19 @@ int ListDir::execute( Tokens& obj)
     else {
         p_str = filesystem::current_path();
     }
-    char *path = new char[p_str.size() + 1];
-    int i = 0;
-    for( char c: p_str) {
-        path[i++] = c;
-    }
-    path[i] = '\0';
-    dirp = opendir(path);
+    
+    string path(p_str);
+
+    dirp = opendir(path.c_str());
     if (dirp == NULL) 
     {   
         stream << "No such File or Directory." << endl;
         return -1;
     }
-    if(l)
-        stream <<left<< setw(30) << "Permissions" << "File Name" << endl;
+    if(l) {
+        stream <<left<< setw(15) << "Permissions" << setw(12) <<
+        "Size" << "File Name" << endl;
+    }
     file_p = new struct dirent();
     do 
     {
@@ -215,20 +206,17 @@ int ListDir::execute( Tokens& obj)
             if(l) {
                 status = stat(file_path.c_str(), &stats);
                 mode_str(stats.st_mode, perm);
-                stream << left << setw(30) << perm << file_p->d_name << endl;
+                stream << left << setw(15) << perm << setw(12) 
+                << (long)stats.st_size << file_p->d_name << endl;
             }
             else { 
-                // cout << file_p->d_name << endl;
-                stream << file_p->d_name <<"\t";
+                stream << file_p->d_name << "\t";
             }
         }
     }while (file_p != NULL);
 
     output = stream.str();
-    // cout << "output" << output;
     closedir(dirp);
-    delete[] path;
-    path = NULL;
     delete file_p;
     file_p = NULL;
     return 0;
@@ -431,7 +419,6 @@ int Move::execute(Tokens& obj) {
         }
     }
 
-
 int Touch::execute( Tokens& obj) {
 
     vector<string>input_tok=obj.tokens;
@@ -464,10 +451,10 @@ int Touch::execute( Tokens& obj) {
         if (stat(path.c_str(), &st) == 0) {
             struct timespec ts;    
             clock_gettime(CLOCK_REALTIME, &ts);
-            struct utimbuf new_times;
-            new_times.actime = ts.tv_sec;
-            new_times.modtime = ts.tv_sec;
-            if (utime(path.c_str(), &new_times) != 0) {
+            struct utimbuf updated_time;
+            updated_time.actime = ts.tv_sec;
+            updated_time.modtime = ts.tv_sec;
+            if (utime(path.c_str(), &updated_time) != 0) {
                 return -1;
             }
         }
